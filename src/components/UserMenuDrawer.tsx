@@ -88,7 +88,8 @@ export function UserMenuDrawer() {
   const displayName  = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Guest User';
   const displayEmail = user?.email || null;
   const initials     = displayName.slice(0, 2).toUpperCase();
-  const tier: 'guest' | 'member' | 'admin' = !user ? 'guest' : 'member';
+  // Tier detection — 'admin' wired when roles table is connected later
+  const tier: 'guest' | 'member' = !user ? 'guest' : 'member';
 
   const handleSignOut = async () => {
     setOpen(false);
