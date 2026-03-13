@@ -381,8 +381,8 @@ export default function Home() {
         />
 
         <div className="max-w-lg mx-auto relative z-10">
-          {/* Brand Row */}
-          <div className="flex items-center justify-center gap-3 mb-1">
+          {/* Brand Row — logo+title centered, menu button pinned to right */}
+          <div className="relative flex items-center justify-center gap-3 mb-1">
             <div className="shrink-0 drop-shadow-md animate-[logo-enter_0.6s_cubic-bezier(0.34,1.56,0.64,1)_both]">
               <img
                 src={logoIcon}
