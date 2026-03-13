@@ -236,11 +236,12 @@ export function UserMenuDrawer() {
               desc="Report issues or suggest features"
               soon
             />
-            {tier === 'admin' && (
+            {/* Admin shortcut shown only to signed-in users (role check wired later) */}
+            {user && (
               <MenuRow
                 icon={<ShieldCheck className="w-4 h-4" />}
                 label="Admin Dashboard"
-                onClick={() => { setOpen(false); navigate('/admin'); }}
+                soon
               />
             )}
           </div>
