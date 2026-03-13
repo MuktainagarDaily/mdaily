@@ -243,12 +243,13 @@ export function UserMenuDrawer() {
               desc="Report issues or suggest features"
               soon
             />
-            {/* Admin shortcut shown only to signed-in users (role check wired later) */}
+            {/* Admin shortcut — navigates to /admin (ProtectedRoute handles access control) */}
             {user && (
               <MenuRow
                 icon={<ShieldCheck className="w-4 h-4" />}
                 label="Admin Dashboard"
-                soon
+                desc="Manage shops & listings"
+                onClick={handleAdminDashboard}
               />
             )}
           </div>
