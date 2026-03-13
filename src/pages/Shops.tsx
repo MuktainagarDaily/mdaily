@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Search, X, Clock, RefreshCw, AlertCircle, SlidersHorizontal } from 'lucide-react';
+import { UserMenuDrawer } from '@/components/UserMenuDrawer';
 import { ShopCard } from '@/components/ShopCard';
 import { isShopOpen } from '@/lib/shopUtils';
 import { useInterval } from '@/hooks/useInterval';
