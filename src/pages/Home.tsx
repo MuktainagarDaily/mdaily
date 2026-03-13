@@ -398,8 +398,12 @@ export default function Home() {
                 className="text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase leading-none mt-0.5"
                 style={{ color: 'hsl(var(--secondary))' }}
               >
-                Local Business Directory
+              Local Business Directory
               </span>
+            </div>
+            {/* User menu — absolutely pinned to right so it never shifts the centered logo */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <UserMenuDrawer />
             </div>
           </div>
 

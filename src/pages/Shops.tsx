@@ -236,6 +236,7 @@ export default function Shops() {
             >
               <RefreshCw className="w-4 h-4" />
             </button>
+            <UserMenuDrawer />
           </div>
 
           {/* Search */}
