@@ -163,7 +163,7 @@ export default function Shops() {
     }
     if (verified && !s.is_verified) return false;
     return true;
-  }, []);
+  }, [shopOpenMap]);
 
   const filteredShops = useMemo(() =>
     (shops as any[]).filter((s) => applyFilters(s, availability, selectedAreas, selectedCategories, verifiedOnly)),
