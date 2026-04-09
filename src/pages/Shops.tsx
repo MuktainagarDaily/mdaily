@@ -146,9 +146,16 @@ export default function Shops() {
     return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [shops]);
 
+  // Pre-compute open status once per render cycle to avoid repeated date arithmetic
+  const shopOpenMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    (shops as any[]).forEach((s) => map.set(s.id, isShopOpen(s)));
+    return map;
+  }, [shops]);
+
   const applyFilters = useCallback((s: any, avail: AvailabilityFilter, areas: string[], cats: string[], verified: boolean) => {
-    if (avail === 'open' && !isShopOpen(s)) return false;
-    if (avail === 'closed' && isShopOpen(s)) return false;
+    if (avail === 'open' && !shopOpenMap.get(s.id)) return false;
+    if (avail === 'closed' && shopOpenMap.get(s.id)) return false;
     if (areas.length > 0 && !areas.includes(s.area?.trim() || '')) return false;
     if (cats.length > 0) {
       const shopCatNames = (s.shop_categories || []).map((sc: any) => sc.categories?.name).filter(Boolean);
@@ -456,17 +463,16 @@ export default function Shops() {
                 >
                   ‹ Back
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                  // Show first, last, current, and neighbors; ellipsis for gaps
-                  const show = p === 1 || p === totalPages || Math.abs(p - safePage) <= 1;
-                  if (!show) {
-                    const prevShown = p === 2 && safePage > 3;
-                    const nextShown = p === totalPages - 1 && safePage < totalPages - 2;
-                    if (prevShown || nextShown) {
-                      return <span key={p} className="px-1.5 text-muted-foreground text-sm select-none">…</span>;
+                {(() => {
+                  const items: React.ReactNode[] = [];
+                  let lastRendered = 0;
+                  for (let p = 1; p <= totalPages; p++) {
+                    const show = p === 1 || p === totalPages || Math.abs(p - safePage) <= 1;
+                    if (!show) continue;
+                    if (lastRendered > 0 && p - lastRendered > 1) {
+                      items.push(<span key={`e${p}`} className="px-1.5 text-muted-foreground text-sm select-none">…</span>);
                     }
-                    return null;
-                  }
+                    lastRendered = p;
                   return (
                     <button
                       key={p}
