@@ -473,20 +473,22 @@ export default function Shops() {
                       items.push(<span key={`e${p}`} className="px-1.5 text-muted-foreground text-sm select-none">…</span>);
                     }
                     lastRendered = p;
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className={`min-w-[36px] h-9 rounded-lg text-sm font-semibold transition-colors ${
-                        p === safePage
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border hover:bg-muted text-foreground'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
+                    items.push(
+                      <button
+                        key={p}
+                        onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`min-w-[36px] h-9 rounded-lg text-sm font-semibold transition-colors ${
+                          p === safePage
+                            ? 'bg-primary text-primary-foreground'
+                            : 'border border-border hover:bg-muted text-foreground'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  }
+                  return items;
+                })()}
                 <button
                   onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={safePage >= totalPages}
