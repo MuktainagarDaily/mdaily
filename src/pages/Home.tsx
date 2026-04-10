@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, TrendingUp, Store, Star, Phone, Plus, ShieldCheck, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import { Search, MapPin, TrendingUp, Store, ShieldCheck, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
 import { UserMenuDrawer } from '@/components/UserMenuDrawer';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
