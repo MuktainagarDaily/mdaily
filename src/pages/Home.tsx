@@ -343,8 +343,6 @@ export default function Home() {
   };
 
   // Quick chip toggles
-  const toggleQuickOpen = () => setAvailability((a) => a === 'open' ? 'all' : 'open');
-  const toggleQuickVerified = () => setVerifiedOnly((v) => !v);
   const toggleQuickCategory = (catName: string) => {
     setSelectedCategories((prev) =>
       prev.includes(catName) ? prev.filter((c) => c !== catName) : [...prev, catName]
