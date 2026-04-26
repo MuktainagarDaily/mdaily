@@ -200,7 +200,7 @@ export function SpeedShopModal({ onClose, onDone }: Props) {
           keywords:     d.keywords.trim() || null,
           opening_time: d.opening_time || null,
           closing_time: d.closing_time || null,
-          image_url:    urlData.publicUrl,
+          image_url:    imageUrl,
           latitude:     parseFloat(d.latitude),
           longitude:    parseFloat(d.longitude),
           is_active:    false,   // always draft
