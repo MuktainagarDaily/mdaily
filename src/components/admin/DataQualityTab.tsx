@@ -3,13 +3,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   MapPin, Pencil, Loader2, TriangleAlert, Users, RefreshCw,
-  HardDrive, PackageX, Trash2, ArrowRight, Phone,
+  HardDrive, PackageX, Trash2, ArrowRight, Phone, FileImage, Wand2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { slugifyShopName, findAvailableImagePath } from '@/lib/storageNaming';
+import { extractStoragePath } from './adminHelpers';
 
 /* ─── Pure area-comparison helpers ─────────────────────────────── */
 function dqAreaCompareKey(area: string): string {
