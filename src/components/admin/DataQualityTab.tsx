@@ -817,6 +817,9 @@ export function DataQualityTab({ onEditShop }: DataQualityTabProps) {
         </p>
       </section>
 
+      {/* Image Rename */}
+      <ImageRenameSection />
+
       {/* Storage Audit */}
       <StorageAuditSection />
     </div>
