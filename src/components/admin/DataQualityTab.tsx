@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { slugifyShopName, findAvailableImagePath } from '@/lib/storageNaming';
+import { slugifyShopName } from '@/lib/storageNaming';
 import { extractStoragePath } from './adminHelpers';
 
 /* ─── Pure area-comparison helpers ─────────────────────────────── */
