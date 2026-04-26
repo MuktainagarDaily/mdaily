@@ -249,6 +249,20 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
       }
     }
 
+    // If the shop was renamed and still uses an image we own, rename the file
+    // so its filename keeps matching the shop name.
+    if (isEdit && form.image_url && form.name.trim() && shop.name && shop.name.trim() !== form.name.trim()) {
+      try {
+        const renamed = await renameShopImage(form.image_url, form.name);
+        if (renamed && renamed.publicUrl !== form.image_url) {
+          await supabase.from('shops').update({ image_url: renamed.publicUrl }).eq('id', shopId);
+          setForm((f) => ({ ...f, image_url: renamed.publicUrl }));
+        }
+      } catch {
+        // Non-fatal: shop save already succeeded
+      }
+    }
+
     toast.success(isEdit ? 'Shop updated!' : 'Shop added!');
     // Old image is already deleted on crop upload — just update the ref
     oldImageUrl.current = form.image_url || '';
