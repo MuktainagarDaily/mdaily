@@ -7,6 +7,7 @@ import { normalizePhone } from '@/lib/shopUtils';
 import { compressImage } from '@/lib/imageUtils';
 import { parseGoogleMapsLink } from '@/lib/mapsUtils';
 import { extractStoragePath, normalizeWhatsApp, isValidPhone, inputCls } from './adminHelpers';
+import { uploadShopImage, renameShopImage } from '@/lib/storageNaming';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
@@ -180,19 +181,21 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
     // Upload immediately so it's ready for save — name file after shop slug
     setUploading(true);
     const compressed = await compressImage(blob as unknown as File);
-    const nameSlug = form.name.trim()
-      ? form.name.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/[\s-]+/g, '-').replace(/^-+|-+$/g, '') || 'shop'
-      : 'shop';
-    const path = `${nameSlug}-${Date.now()}.webp`;
-    const { error } = await supabase.storage.from('shop-images').upload(path, compressed, { upsert: true, contentType: 'image/webp' });
-    if (error) { toast.error('Image upload failed'); setUploading(false); return; }
-    const { data } = supabase.storage.from('shop-images').getPublicUrl(path);
+    let publicUrl = '';
+    try {
+      const result = await uploadShopImage(compressed, form.name);
+      publicUrl = result.publicUrl;
+    } catch {
+      toast.error('Image upload failed');
+      setUploading(false);
+      return;
+    }
     // Delete the old image if replacing
-    if (oldImageUrl.current && oldImageUrl.current !== data.publicUrl) {
+    if (oldImageUrl.current && oldImageUrl.current !== publicUrl) {
       const oldPath = extractStoragePath(oldImageUrl.current);
       if (oldPath) await supabase.storage.from('shop-images').remove([oldPath]);
     }
-    setForm((f) => ({ ...f, image_url: data.publicUrl }));
+    setForm((f) => ({ ...f, image_url: publicUrl }));
     setCropPreview(''); // clear local preview — use the real URL
     toast.success('Image uploaded ✓');
     setUploading(false);
