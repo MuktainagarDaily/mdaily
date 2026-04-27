@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Phone, MessageCircle, ArrowLeft, MapPin, Clock, Tag, Share2, ShieldCheck, Navigation } from 'lucide-react';
+import { Phone, MessageCircle, ArrowLeft, MapPin, Clock, Tag, Share2, ShieldCheck, Navigation, Sparkles } from 'lucide-react';
 import { UserMenuDrawer } from '@/components/UserMenuDrawer';
 import { formatTime, isShopOpen } from '@/lib/shopUtils';
 import { toast } from 'sonner';
@@ -302,6 +302,37 @@ export default function ShopDetail() {
             </p>
           </div>
         )}
+
+        {/* Amenities — only when present. Accepts text[] or comma-separated string. */}
+        {(() => {
+          const raw = (shop as any).amenities;
+          const items: string[] = Array.isArray(raw)
+            ? raw.map((s) => String(s).trim()).filter(Boolean)
+            : typeof raw === 'string'
+            ? raw.split(',').map((s) => s.trim()).filter(Boolean)
+            : [];
+          if (items.length === 0) return null;
+          return (
+            <div className="bg-card rounded-xl border border-border p-4">
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                  Amenities
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {items.map((label, i) => (
+                  <span
+                    key={`${label}-${i}`}
+                    className="text-xs px-2.5 py-1 rounded-full font-medium border border-border bg-muted text-foreground"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Details */}
         <div className="bg-card rounded-xl border border-border divide-y divide-border">
