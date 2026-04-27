@@ -41,11 +41,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function HistoryTracker() {
   const location = useLocation();
   const isFirst = useRef(true);
+  const previous = useRef<string | null>(null);
   useEffect(() => {
+    const current = location.pathname + location.search;
     if (isFirst.current) {
       isFirst.current = false;
+      previous.current = current;
       return;
     }
+    // Stash the route we're leaving so useSmartBack can use it as a smarter fallback.
+    if (previous.current && previous.current !== current) {
+      sessionStorage.setItem('prevInAppRoute', previous.current);
+    }
+    previous.current = current;
     sessionStorage.setItem(IN_APP_HISTORY_FLAG, '1');
   }, [location.key]);
   return null;
