@@ -206,6 +206,7 @@ export function SpeedShopModal({ onClose, onDone }: Props) {
           image_url:    imageUrl,
           latitude:     parseFloat(d.latitude),
           longitude:    parseFloat(d.longitude),
+          amenities:    d.amenities.length > 0 ? d.amenities : null,
           is_active:    false,   // always draft
           is_open:      true,
           is_verified:  false,
