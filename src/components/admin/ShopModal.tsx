@@ -53,6 +53,7 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
     image_url:    shop.image_url || '',
     latitude:     shop.latitude?.toString() || '',
     longitude:    shop.longitude?.toString() || '',
+    amenities:    parseAmenities((shop as any).amenities) as string[],
   });
 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
