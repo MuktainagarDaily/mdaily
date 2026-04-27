@@ -7,6 +7,7 @@ import { UserMenuDrawer } from '@/components/UserMenuDrawer';
 import { ShopCard } from '@/components/ShopCard';
 import { isShopOpen } from '@/lib/shopUtils';
 import { useInterval } from '@/hooks/useInterval';
+import { useSmartBack } from '@/hooks/useSmartBack';
 import {
   Drawer,
   DrawerContent,
@@ -39,6 +40,7 @@ function ShopSkeleton() {
 export default function Shops() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const goBack = useSmartBack();
   const qc = useQueryClient();
   const initialSearch = searchParams.get('search') || '';
   const filterParam = searchParams.get('filter');
@@ -327,7 +329,7 @@ export default function Shops() {
         <div className="max-w-lg mx-auto">
           {/* Title row */}
           <div className="flex items-center gap-3 mb-3">
-            <button onClick={() => navigate(-1)} className="p-1 shrink-0 hover:bg-primary-foreground/10 rounded-lg transition-colors">
+            <button onClick={() => goBack('/')} className="p-1 shrink-0 hover:bg-primary-foreground/10 rounded-lg transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </button>
             <div className="min-w-0 flex-1">

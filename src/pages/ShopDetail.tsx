@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSmartBack } from '@/hooks/useSmartBack';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const goBack = useSmartBack();
   const [imgError, setImgError] = useState(false);
 
   const { data: shop, isLoading } = useQuery({
@@ -147,7 +149,7 @@ export default function ShopDetail() {
       <header className="bg-primary text-primary-foreground px-4 py-4 sticky top-0 z-10 shadow-md">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => goBack('/shops')}
             className="p-1 hover:bg-primary-foreground/10 rounded-lg transition-colors shrink-0"
           >
             <ArrowLeft className="w-6 h-6" />

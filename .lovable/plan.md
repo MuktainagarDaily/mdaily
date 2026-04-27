@@ -1,91 +1,49 @@
-## Audit result: Amenities feature is orphaned also give sql patch script for this changes
+## Problem
 
-The `src/components/shared/AmenitiesPicker.tsx` component exists and is fully built (preset chips + custom add + `parseAmenities` helper for `text[] | string | null`), but it is **not wired up anywhere**:
+On the Shop Detail page (`/shop/:id`), the back button calls `navigate(-1)`. When a user lands directly via a shared link or new tab, there is no in-app history, so pressing back either does nothing, exits the site, or returns to an external referrer (search engine, WhatsApp, etc.). This breaks the expected in-app navigation.
 
-- No `amenities` column exists on `shops` or `shop_requests` (verified against live DB).
-- No file imports `AmenitiesPicker` (zero usages across the codebase).
-- No public display of amenities on shop detail.
-- No CSV import/export coverage.
-- Not mentioned in `master_schema.sql`, `DOCUMENT.md`, or `V2_DOC_CHANGES.md`.
+The same issue likely exists wherever else we use `navigate(-1)` as the only back action (e.g. Admin pages, NotFound).
 
-So nothing actually works yet. To make the feature functional, we need DB changes + form integration + public display + admin tooling coverage.
+## Goal
 
----
+If the user has prior in-app history → go back as today.
+If they arrived directly (no in-app history) → route them to a sensible page inside the app instead of leaving the site.
 
-## What needs to change
+## Approach
 
-### 1. Database (migration)
+1. **Detect direct entry reliably**
+   - Track in-app navigations using a small flag set on `BrowserRouter`-driven route changes (e.g. set `sessionStorage.setItem('hasInAppHistory', '1')` on every internal navigation).
+   - On mount of pages with a back button, decide the back behavior based on this flag (and as a secondary check, `window.history.state?.idx > 0`, which React Router populates).
 
-Add nullable `amenities text[]` to two tables (matches what `AmenitiesPicker` already produces and what `parseAmenities` already expects):
+2. **Add a small `useSmartBack` hook**
+   - Location: `src/hooks/useSmartBack.ts`
+   - Returns a `goBack(fallback: string)` function.
+   - Logic:
+     - If in-app history exists → `navigate(-1)`
+     - Else → `navigate(fallback, { replace: true })`
 
-```sql
-ALTER TABLE public.shops          ADD COLUMN IF NOT EXISTS amenities text[] DEFAULT '{}'::text[];
-ALTER TABLE public.shop_requests  ADD COLUMN IF NOT EXISTS amenities text[] DEFAULT '{}'::text[];
-```
+3. **Wire fallback per page**
+   - `ShopDetail` → fallback `/shops`
+   - Any other place currently using `navigate(-1)` → audit and pass an appropriate fallback (likely `/` for admin login redirects, `/shops` or `/` elsewhere). Only change call sites that already use `navigate(-1)`; do not touch unrelated navigation.
 
-No RLS changes needed (existing policies cover all columns). No backfill needed (default empty array).
+4. **Mark in-app navigations**
+   - Add a tiny listener inside `App.tsx` (or a dedicated `HistoryTracker` component mounted inside `BrowserRouter`) that sets the `hasInAppHistory` sessionStorage flag whenever the location changes. The first navigation after a fresh load flips the flag, so subsequent back presses behave normally.
 
-Will also append the same statements to `supabase/master_schema.sql` per project convention.
+## Out of scope
 
-### 2. Admin shop forms — write path
+- No visual/UX redesign of the back button.
+- No change to data fetching, SEO, or routing structure.
+- No changes to business logic.
 
-Integrate `AmenitiesPicker` into:
+## Technical notes
 
-- `src/components/admin/ShopModal.tsx` (full create/edit form) — placed after Description, before Image, with a collapsed-by-default visual grouping consistent with existing sections.
-- `src/components/admin/SpeedShopModal.tsx` (quick-add) — included as an optional collapsible block so the speed flow stays fast.
+- React Router v6: `window.history.state?.idx` is `0` on first entry and increments on internal pushes — usable as a secondary signal without sessionStorage, but sessionStorage survives in-page reloads better. We'll use sessionStorage as the primary check and `idx` as a fallback.
+- Replace navigation (`replace: true`) on the fallback so the user's browser-back from `/shops` exits to wherever they came from, instead of looping back to the shop detail.
+- Pure frontend change. No DB, no schema, no migrations.
 
-Both will read existing values via `parseAmenities(shop.amenities)` and write back as `string[]` (or `null` if empty, to keep DB tidy).
+## Files to touch
 
-### 3. Public listing request — write path
-
-- `src/components/RequestListingModal.tsx` — add the picker as an optional section so submitters can suggest amenities. Stored on `shop_requests.amenities`.
-
-### 4. Approval flow — propagation
-
-- `src/components/admin/RequestsTab.tsx` — when approving a request, copy `request.amenities` into the new shop row alongside the other fields already being propagated.
-
-### 5. Public display — read path
-
-- `src/pages/ShopDetail.tsx` — add an "Amenities" section (only renders if `parseAmenities(shop.amenities).length > 0`) using existing chip styling so it matches the rest of the page.
-- `src/components/ShopCard.tsx` — **no change** (keep cards compact; amenities only show on detail page).
-
-### 6. CSV import/export — coverage
-
-- `src/components/admin/CsvImportModal.tsx` — accept an optional `amenities` column. Parse using a pipe `|` separator (commas would collide with CSV); empty cell → empty array. Validate as a list of trimmed non-empty strings, max ~12 entries per row.
-- `src/components/admin/ShopsTab.tsx` CSV export — include an `amenities` column joined with `|`.
-- Update the CSV template/header docs surfaced in the import modal preview.
-
-### 7. Types & docs
-
-- `src/integrations/supabase/types.ts` is auto-generated and will refresh after the migration — no manual edit.
-- Update `DOCUMENT.md` and `V2_DOC_CHANGES.md` with a short "Amenities" entry (storage shape, where it shows, CSV format).
-
----
-
-## Out of scope (intentionally skipped)
-
-- Filtering shops by amenity on Home/Shops pages — can be added later as a follow-up; not required to make the feature "workable".
-- Showing amenities on `ShopCard` — keeps card density unchanged.
-- Backfilling existing shops with guessed amenities.
-- Search index changes for amenities (current search by name/area/address stays as-is).
-
----
-
-## Files touched
-
-
-| File                                      | Change                                                |
-| ----------------------------------------- | ----------------------------------------------------- |
-| migration (new)                           | Add `amenities text[]` to `shops` and `shop_requests` |
-| `supabase/master_schema.sql`              | Mirror the ALTERs                                     |
-| `src/components/admin/ShopModal.tsx`      | Mount `AmenitiesPicker`, include in save payload      |
-| `src/components/admin/SpeedShopModal.tsx` | Optional collapsible amenities block                  |
-| `src/components/RequestListingModal.tsx`  | Optional amenities section in public form             |
-| `src/components/admin/RequestsTab.tsx`    | Carry `amenities` into approved shop row              |
-| `src/pages/ShopDetail.tsx`                | Render amenities chips section                        |
-| `src/components/admin/ShopsTab.tsx`       | CSV export includes `amenities` (`                    |
-| `src/components/admin/CsvImportModal.tsx` | Parse + validate `amenities` column                   |
-| `DOCUMENT.md`, `V2_DOC_CHANGES.md`        | Document amenities feature                            |
-
-
-No new dependencies. No breaking changes — the column is nullable with a safe default, and `parseAmenities` already tolerates `null`, comma-strings, and arrays.
+- `src/hooks/useSmartBack.ts` (new)
+- `src/App.tsx` (add a small in-router history tracker)
+- `src/pages/ShopDetail.tsx` (use `useSmartBack` with `/shops` fallback)
+- Quick audit pass for other `navigate(-1)` usages and apply the same hook with appropriate fallbacks.

@@ -2,8 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { IN_APP_HISTORY_FLAG } from "@/hooks/useSmartBack";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Home from "./pages/Home";
@@ -35,6 +36,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Marks that the user has navigated within the app at least once.
+ *  Used by useSmartBack to fall back when there's no in-app history. */
+function HistoryTracker() {
+  const location = useLocation();
+  const isFirst = useRef(true);
+  useEffect(() => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      return;
+    }
+    sessionStorage.setItem(IN_APP_HISTORY_FLAG, '1');
+  }, [location.key]);
+  return null;
+}
+
 function CategoryRedirect() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -59,6 +75,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <HistoryTracker />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/shops" element={<Shops />} />
