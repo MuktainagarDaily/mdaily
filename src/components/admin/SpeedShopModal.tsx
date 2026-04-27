@@ -390,6 +390,10 @@ export function SpeedShopModal({ onClose, onDone }: Props) {
               <input value={draft.keywords} onChange={(e) => updateDraft({ keywords: e.target.value })}
                 className={inputCls} placeholder="e.g. grocery, medicines" maxLength={200} />
             </Field>
+
+            <Field label="Amenities">
+              <AmenitiesPicker value={draft.amenities} onChange={(next) => updateDraft({ amenities: next })} />
+            </Field>
           </div>
 
           {/* Footer actions */}
