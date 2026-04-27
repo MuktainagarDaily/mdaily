@@ -10,6 +10,7 @@ import { extractStoragePath, normalizeWhatsApp, isValidPhone, inputCls } from '.
 import { uploadShopImage, renameShopImage } from '@/lib/storageNaming';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
+import { AmenitiesPicker, parseAmenities } from '@/components/shared/AmenitiesPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
