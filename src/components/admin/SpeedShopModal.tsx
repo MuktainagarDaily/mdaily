@@ -24,6 +24,7 @@ import { inputCls } from './adminHelpers';
 import { uploadShopImage } from '@/lib/storageNaming';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
+import { AmenitiesPicker } from '@/components/shared/AmenitiesPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -49,6 +50,7 @@ type DraftShop = {
   closing_time: string;
   description: string;
   keywords: string;
+  amenities: string[];
 };
 
 function emptyDraft(): DraftShop {
@@ -60,6 +62,7 @@ function emptyDraft(): DraftShop {
     area: '', sub_area: '', address: '',
     category_id: '', opening_time: '', closing_time: '',
     description: '', keywords: '',
+    amenities: [],
   };
 }
 
@@ -203,6 +206,7 @@ export function SpeedShopModal({ onClose, onDone }: Props) {
           image_url:    imageUrl,
           latitude:     parseFloat(d.latitude),
           longitude:    parseFloat(d.longitude),
+          amenities:    d.amenities.length > 0 ? d.amenities : null,
           is_active:    false,   // always draft
           is_open:      true,
           is_verified:  false,
@@ -385,6 +389,10 @@ export function SpeedShopModal({ onClose, onDone }: Props) {
             <Field label="Keywords">
               <input value={draft.keywords} onChange={(e) => updateDraft({ keywords: e.target.value })}
                 className={inputCls} placeholder="e.g. grocery, medicines" maxLength={200} />
+            </Field>
+
+            <Field label="Amenities">
+              <AmenitiesPicker value={draft.amenities} onChange={(next) => updateDraft({ amenities: next })} />
             </Field>
           </div>
 

@@ -10,6 +10,7 @@ import { extractStoragePath, normalizeWhatsApp, isValidPhone, inputCls } from '.
 import { uploadShopImage, renameShopImage } from '@/lib/storageNaming';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
+import { AmenitiesPicker, parseAmenities } from '@/components/shared/AmenitiesPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -52,6 +53,7 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
     image_url:    shop.image_url || '',
     latitude:     shop.latitude?.toString() || '',
     longitude:    shop.longitude?.toString() || '',
+    amenities:    parseAmenities((shop as any).amenities) as string[],
   });
 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
@@ -226,6 +228,7 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
       image_url:    form.image_url || null,
       latitude:     form.latitude ? parseFloat(form.latitude) : null,
       longitude:    form.longitude ? parseFloat(form.longitude) : null,
+      amenities:    form.amenities.length > 0 ? form.amenities : null,
     };
 
     let shopId = shop.id;
@@ -389,6 +392,10 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
               <input value={form.keywords} onChange={(e) => set('keywords', e.target.value)}
                 className={inputCls} placeholder="e.g. grocery, medicines, electronics" maxLength={200} />
               <p className="text-[11px] text-muted-foreground mt-1">Separate keywords with commas</p>
+            </Field>
+
+            <Field label="Amenities (optional)">
+              <AmenitiesPicker value={form.amenities} onChange={(next) => set('amenities', next)} />
             </Field>
 
             {/* Location */}
