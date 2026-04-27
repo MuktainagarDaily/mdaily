@@ -24,6 +24,7 @@ import { inputCls } from './adminHelpers';
 import { uploadShopImage } from '@/lib/storageNaming';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
+import { AmenitiesPicker } from '@/components/shared/AmenitiesPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
