@@ -6,6 +6,57 @@ import { toast } from 'sonner';
 import { normalizePhone } from '@/lib/shopUtils';
 import { normalizeWhatsApp, isValidPhone } from './adminHelpers';
 import { parseCsv } from '@/lib/csvUtils';
+import { PRESET_AMENITIES } from '@/components/shared/AmenitiesPicker';
+
+const MAX_AMENITY_LEN = 40;
+const MAX_AMENITIES_PER_ROW = 12;
+const PRESET_LOWER = new Set(PRESET_AMENITIES.map((a) => a.toLowerCase()));
+
+/** Parse + validate the amenities cell. Returns clean list and per-cell messages. */
+function validateAmenitiesCell(raw: string): { values: string[]; messages: string[]; hadError: boolean } {
+  const messages: string[] = [];
+  if (!raw) return { values: [], messages, hadError: false };
+
+  const parts = raw.split('|').map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) {
+    messages.push('Amenities column present but empty — ignored');
+    return { values: [], messages, hadError: false };
+  }
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  let droppedTooLong = 0;
+  let droppedInvalid = 0;
+  let droppedDupes = 0;
+
+  for (const part of parts) {
+    // Strip control characters; reject if it leaves nothing usable
+    const clean = part.replace(/[\x00-\x1F\x7F]/g, '').trim();
+    if (!clean) { droppedInvalid++; continue; }
+    if (clean.length > MAX_AMENITY_LEN) { droppedTooLong++; continue; }
+
+    const key = clean.toLowerCase();
+    if (seen.has(key)) { droppedDupes++; continue; }
+    seen.add(key);
+    out.push(clean);
+    if (out.length >= MAX_AMENITIES_PER_ROW) break;
+  }
+
+  if (droppedTooLong > 0) messages.push(`Amenities: ${droppedTooLong} value(s) over ${MAX_AMENITY_LEN} chars dropped`);
+  if (droppedInvalid > 0) messages.push(`Amenities: ${droppedInvalid} invalid value(s) dropped`);
+  if (droppedDupes > 0) messages.push(`Amenities: ${droppedDupes} duplicate value(s) merged`);
+  if (parts.length > MAX_AMENITIES_PER_ROW && out.length === MAX_AMENITIES_PER_ROW) {
+    messages.push(`Amenities: only first ${MAX_AMENITIES_PER_ROW} kept`);
+  }
+
+  const nonPreset = out.filter((v) => !PRESET_LOWER.has(v.toLowerCase()));
+  if (nonPreset.length > 0) {
+    messages.push(`Amenities: ${nonPreset.length} custom value(s) — ${nonPreset.slice(0, 3).join(', ')}${nonPreset.length > 3 ? '…' : ''}`);
+  }
+
+  const hadError = out.length === 0 && (droppedTooLong + droppedInvalid) > 0;
+  return { values: out, messages, hadError };
+}
 
 type ImportRowStatus = 'ready' | 'warning' | 'error' | 'duplicate';
 interface ImportRow {
@@ -60,9 +111,8 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
       const latitude = (raw['latitude'] || '').trim(); const longitude = (raw['longitude'] || '').trim();
       const is_active = (raw['is_active'] || '').trim(); const is_verified = (raw['is_verified'] || '').trim();
       const amenitiesRaw = (raw['amenities'] || '').trim();
-      const amenities = amenitiesRaw
-        ? amenitiesRaw.split('|').map((s) => s.trim()).filter(Boolean).slice(0, 12)
-        : [];
+      const amenitiesResult = validateAmenitiesCell(amenitiesRaw);
+      const amenities = amenitiesResult.values;
       const messages: string[] = []; let status: ImportRowStatus = 'ready';
       if (!name) { messages.push('Shop name is required'); status = 'error'; }
       if (!phone) { messages.push('Phone number is required'); status = 'error'; }
@@ -82,7 +132,12 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
         resolvedCategoryId = catMap.get(category.toLowerCase().trim()) ?? null;
         if (!resolvedCategoryId && status !== 'error' && status !== 'duplicate') { messages.push(`Category "${category}" not found — will import without category`); status = 'warning'; }
       }
-      if (amenitiesRaw && amenities.length === 0 && status !== 'error') { messages.push('Amenities column present but empty — ignored'); }
+      if (amenitiesResult.messages.length > 0) {
+        messages.push(...amenitiesResult.messages);
+        if (status !== 'error' && status !== 'duplicate' && (amenitiesResult.hadError || amenitiesResult.values.length < (amenitiesRaw.split('|').filter((s) => s.trim()).length))) {
+          status = status === 'ready' ? 'warning' : status;
+        }
+      }
       if (status === 'ready' && messages.length === 0) messages.push('Ready to import');
       return { name, phone, whatsapp, address, area, sub_area, description, keywords, category, opening_time, closing_time, latitude, longitude, is_active, is_verified, amenities, status, messages, resolvedCategoryId };
     });

@@ -195,7 +195,7 @@ export type Database = {
           name: string
           opening_time: string | null
           phone: string | null
-          slug: string | null
+          slug: string
           sub_area: string | null
           updated_at: string
           whatsapp: string | null
@@ -219,7 +219,7 @@ export type Database = {
           name: string
           opening_time?: string | null
           phone?: string | null
-          slug?: string | null
+          slug: string
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null
@@ -243,7 +243,7 @@ export type Database = {
           name?: string
           opening_time?: string | null
           phone?: string | null
-          slug?: string | null
+          slug?: string
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null
