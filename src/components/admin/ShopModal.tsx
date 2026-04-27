@@ -228,6 +228,7 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
       image_url:    form.image_url || null,
       latitude:     form.latitude ? parseFloat(form.latitude) : null,
       longitude:    form.longitude ? parseFloat(form.longitude) : null,
+      amenities:    form.amenities.length > 0 ? form.amenities : null,
     };
 
     let shopId = shop.id;
