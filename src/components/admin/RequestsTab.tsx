@@ -35,6 +35,7 @@ interface ShopRequest {
   latitude: number | null;
   longitude: number | null;
   maps_link: string | null;
+  amenities: string[] | null;
 }
 
 interface RequestsTabProps {
@@ -117,6 +118,7 @@ export function RequestsTab({ onShopCreated }: RequestsTabProps) {
         // and isShopOpen() compute live status from times
         ...(hasAnyHours ? {} : { is_open: true }),
         is_verified: false,
+        amenities: Array.isArray(req.amenities) && req.amenities.length > 0 ? req.amenities : [],
       } as any])
       .select('id')
       .single();
@@ -356,6 +358,18 @@ export function RequestsTab({ onShopCreated }: RequestsTabProps) {
                     <span className="text-sm text-foreground break-words">{value}</span>
                   </div>
                 ) : null
+              )}
+              {Array.isArray(viewRequest.amenities) && viewRequest.amenities.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20 shrink-0 pt-0.5">Amenities</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewRequest.amenities.map((a, i) => (
+                      <span key={`${a}-${i}`} className="text-xs px-2 py-0.5 rounded-full font-medium border border-border bg-muted text-foreground">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
               {(viewRequest.latitude && viewRequest.longitude) ? (
                 <div className="flex items-start gap-3">

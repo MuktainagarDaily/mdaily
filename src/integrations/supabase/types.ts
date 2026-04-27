@@ -104,6 +104,7 @@ export type Database = {
         Row: {
           address: string | null
           admin_notes: string | null
+          amenities: string[]
           area: string | null
           category_text: string | null
           closing_time: string | null
@@ -127,6 +128,7 @@ export type Database = {
         Insert: {
           address?: string | null
           admin_notes?: string | null
+          amenities?: string[]
           area?: string | null
           category_text?: string | null
           closing_time?: string | null
@@ -150,6 +152,7 @@ export type Database = {
         Update: {
           address?: string | null
           admin_notes?: string | null
+          amenities?: string[]
           area?: string | null
           category_text?: string | null
           closing_time?: string | null
@@ -175,6 +178,7 @@ export type Database = {
       shops: {
         Row: {
           address: string | null
+          amenities: string[]
           area: string | null
           category_id: string | null
           closing_time: string | null
@@ -191,13 +195,14 @@ export type Database = {
           name: string
           opening_time: string | null
           phone: string | null
-          slug: string
+          slug: string | null
           sub_area: string | null
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
           address?: string | null
+          amenities?: string[]
           area?: string | null
           category_id?: string | null
           closing_time?: string | null
@@ -214,13 +219,14 @@ export type Database = {
           name: string
           opening_time?: string | null
           phone?: string | null
-          slug: string
+          slug?: string | null
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
           address?: string | null
+          amenities?: string[]
           area?: string | null
           category_id?: string | null
           closing_time?: string | null
@@ -237,7 +243,7 @@ export type Database = {
           name?: string
           opening_time?: string | null
           phone?: string | null
-          slug?: string
+          slug?: string | null
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null

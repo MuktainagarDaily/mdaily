@@ -13,12 +13,13 @@ interface ImportRow {
   sub_area: string; description: string; keywords: string;
   category: string; opening_time: string; closing_time: string; latitude: string;
   longitude: string; is_active: string; is_verified: string;
+  amenities: string[];
   status: ImportRowStatus; messages: string[]; resolvedCategoryId: string | null;
 }
 interface ImportResult { imported: number; importedWithWarnings: number; skippedDupes: number; skippedErrors: number; failedInserts: number; }
 type ImportStep = 'upload' | 'preview' | 'result';
-const CSV_TEMPLATE_HEADERS = ['name','phone','whatsapp','address','area','sub_area','description','keywords','category','opening_time','closing_time','latitude','longitude','is_active','is_verified'];
-const CSV_TEMPLATE_EXAMPLE = ['Sharma General Store','9876543210','9876543210','Near Bus Stand Station Road','Main Road','Main Bazaar','General merchandise and daily needs','grocery store daily needs','Grocery','09:00','21:00','21.0325','75.6920','true','false'];
+const CSV_TEMPLATE_HEADERS = ['name','phone','whatsapp','address','area','sub_area','description','keywords','category','opening_time','closing_time','latitude','longitude','is_active','is_verified','amenities'];
+const CSV_TEMPLATE_EXAMPLE = ['Sharma General Store','9876543210','9876543210','Near Bus Stand Station Road','Main Road','Main Bazaar','General merchandise and daily needs','grocery store daily needs','Grocery','09:00','21:00','21.0325','75.6920','true','false','Parking|UPI Accepted|Home Delivery'];
 function downloadTemplate() {
   const rows = [CSV_TEMPLATE_HEADERS.join(','), CSV_TEMPLATE_EXAMPLE.join(',')].join('\n');
   const blob = new Blob([rows], { type: 'text/csv' });
@@ -58,6 +59,10 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
       const opening_time = (raw['opening_time'] || '').trim(); const closing_time = (raw['closing_time'] || '').trim();
       const latitude = (raw['latitude'] || '').trim(); const longitude = (raw['longitude'] || '').trim();
       const is_active = (raw['is_active'] || '').trim(); const is_verified = (raw['is_verified'] || '').trim();
+      const amenitiesRaw = (raw['amenities'] || '').trim();
+      const amenities = amenitiesRaw
+        ? amenitiesRaw.split('|').map((s) => s.trim()).filter(Boolean).slice(0, 12)
+        : [];
       const messages: string[] = []; let status: ImportRowStatus = 'ready';
       if (!name) { messages.push('Shop name is required'); status = 'error'; }
       if (!phone) { messages.push('Phone number is required'); status = 'error'; }
@@ -77,8 +82,9 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
         resolvedCategoryId = catMap.get(category.toLowerCase().trim()) ?? null;
         if (!resolvedCategoryId && status !== 'error' && status !== 'duplicate') { messages.push(`Category "${category}" not found — will import without category`); status = 'warning'; }
       }
+      if (amenitiesRaw && amenities.length === 0 && status !== 'error') { messages.push('Amenities column present but empty — ignored'); }
       if (status === 'ready' && messages.length === 0) messages.push('Ready to import');
-      return { name, phone, whatsapp, address, area, sub_area, description, keywords, category, opening_time, closing_time, latitude, longitude, is_active, is_verified, status, messages, resolvedCategoryId };
+      return { name, phone, whatsapp, address, area, sub_area, description, keywords, category, opening_time, closing_time, latitude, longitude, is_active, is_verified, amenities, status, messages, resolvedCategoryId };
     });
     setRows(processed); setParsing(false); setStep('preview');
     if (fileRef.current) fileRef.current.value = '';
@@ -123,6 +129,7 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
         is_active: row.is_active !== '' ? row.is_active.toLowerCase() === 'true' : true,
         is_verified: row.is_verified !== '' ? row.is_verified.toLowerCase() === 'true' : false,
         is_open: true,
+        amenities: row.amenities.length > 0 ? row.amenities : [],
       },
     }));
 
@@ -187,6 +194,9 @@ export function CsvImportModal({ onClose, onDone }: CsvImportModalProps) {
                 <li>Download the CSV template below</li><li>Fill in your shop data — one shop per row</li>
                 <li>Upload the file and review the preview</li><li>Import only valid rows</li>
               </ol>
+              <p className="text-xs text-muted-foreground pt-1">
+                <strong>Amenities:</strong> separate multiple values with a pipe <code className="px-1 py-0.5 rounded bg-muted">|</code> &nbsp;e.g. <code className="px-1 py-0.5 rounded bg-muted">Parking|AC|Wi-Fi</code>
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 items-start">
               <button onClick={downloadTemplate} className="flex items-center gap-2 border border-border bg-background text-foreground px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-muted transition-colors">

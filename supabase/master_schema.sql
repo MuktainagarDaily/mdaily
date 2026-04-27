@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS public.shops (
   latitude     double precision NULL,
   longitude    double precision NULL,
   slug         text            NULL,
+  amenities    text[]      NOT NULL DEFAULT '{}'::text[], -- Parking, AC, Wi-Fi, etc.
   created_at   timestamptz NOT NULL DEFAULT now(),
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
@@ -158,6 +159,7 @@ CREATE TABLE IF NOT EXISTS public.shop_requests (
   submitter_name text            NULL,   -- who submitted (optional)
   admin_notes    text            NULL,   -- internal notes written by admin
   status         text        NOT NULL DEFAULT 'pending',  -- pending | approved | rejected
+  amenities      text[]      NOT NULL DEFAULT '{}'::text[], -- submitter-suggested amenities
   created_at     timestamptz NOT NULL DEFAULT now(),
   updated_at     timestamptz NOT NULL DEFAULT now()
 );

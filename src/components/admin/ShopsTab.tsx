@@ -108,12 +108,16 @@ export function ShopsTab({ onEdit, onImport, onSpeedAdd }: ShopsTabProps) {
       'name', 'phone', 'whatsapp', 'area', 'sub_area', 'address',
       'description', 'keywords', 'opening_time', 'closing_time',
       'latitude', 'longitude', 'category', 'is_active', 'is_verified', 'is_open',
+      'amenities',
     ];
     const rows = filtered.map((s: any) => {
       const cats = (s.shop_categories || [])
         .map((sc: any) => sc.categories?.name)
         .filter(Boolean)
         .join(' | ');
+      const amenities = Array.isArray(s.amenities)
+        ? s.amenities.join('|')
+        : (typeof s.amenities === 'string' ? s.amenities : '');
       return [
         s.name ?? '', s.phone ?? '', s.whatsapp ?? '', s.area ?? '',
         s.sub_area ?? '', s.address ?? '', s.description ?? '', s.keywords ?? '',
@@ -123,6 +127,7 @@ export function ShopsTab({ onEdit, onImport, onSpeedAdd }: ShopsTabProps) {
         s.is_active ? 'true' : 'false',
         s.is_verified ? 'true' : 'false',
         s.is_open ? 'true' : 'false',
+        amenities,
       ];
     });
     downloadCsv('muktainagar-shops', headers, rows);

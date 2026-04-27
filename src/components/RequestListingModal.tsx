@@ -8,6 +8,7 @@ import { compressImage } from '@/lib/imageUtils';
 import { parseGoogleMapsLink } from '@/lib/mapsUtils';
 import { TimePickerField } from '@/components/shared/TimePickerField';
 import { ImageCropPicker } from '@/components/shared/ImageCropPicker';
+import { AmenitiesPicker } from '@/components/shared/AmenitiesPicker';
 import { DEV_AUTOFILL, DUMMY_SHOP_DATA } from '@/lib/devHelpers';
 import { uploadShopImage } from '@/lib/storageNaming';
 
@@ -63,6 +64,7 @@ export function RequestListingModal({ onClose }: Props) {
     latitude: '',
     longitude: '',
   });
+  const [amenities, setAmenities] = useState<string[]>([]);
 
   const [mapsLink, setMapsLink]         = useState('');
   const [mapsLinkInput, setMapsLinkInput] = useState('');
@@ -239,6 +241,7 @@ export function RequestListingModal({ onClose }: Props) {
       latitude: form.latitude ? parseFloat(form.latitude) : null,
       longitude: form.longitude ? parseFloat(form.longitude) : null,
       maps_link: mapsLink || null,
+      amenities: amenities.length > 0 ? amenities : null,
     });
     setSaving(false);
     if (error) { toast.error('Submission failed. Please try again.'); return; }
@@ -351,6 +354,10 @@ export function RequestListingModal({ onClose }: Props) {
             <input value={form.keywords} onChange={(e) => set('keywords', e.target.value)}
               className={inputCls} placeholder="e.g. grocery, medicines, electronics" maxLength={200} />
             <p className="text-[11px] text-muted-foreground mt-1">Separate keywords with commas</p>
+          </Field>
+
+          <Field label="Amenities (optional)">
+            <AmenitiesPicker value={amenities} onChange={setAmenities} />
           </Field>
 
           {/* ── Section: Location ─────────────────────────────── */}
