@@ -50,6 +50,7 @@ type DraftShop = {
   closing_time: string;
   description: string;
   keywords: string;
+  amenities: string[];
 };
 
 function emptyDraft(): DraftShop {
