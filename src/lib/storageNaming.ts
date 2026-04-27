@@ -33,22 +33,37 @@ export function slugifyShopName(name: string | null | undefined): string {
 /**
  * List existing files in the bucket with the given slug prefix and pick the
  * first available `slug.webp` / `slug-1.webp` / `slug-2.webp` etc.
+ *
+ * Pages through results so we don't miss collisions when a slug prefix
+ * matches more than a single page of files (Supabase `list` caps page
+ * size, so a substring match on a busy bucket can otherwise be truncated).
  */
+const LIST_PAGE_SIZE = 1000;
+const MAX_COLLISION_PROBE = 100000;
+
 export async function findAvailableImagePath(baseSlug: string): Promise<string> {
   const safe = baseSlug || 'shop';
-  // Supabase storage `list` filters by `search` (substring on filename in the given folder).
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .list('', { limit: 1000, search: safe });
-
-  // If listing fails for any reason, fall back to a timestamp suffix to
-  // guarantee uniqueness rather than risk overwriting a sibling file.
-  if (error) {
+  const taken = new Set<string>();
+  let offset = 0;
+  try {
+    // Supabase storage `list` filters by `search` (substring on filename in the given folder).
+    while (true) {
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .list('', { limit: LIST_PAGE_SIZE, offset, search: safe });
+      if (error) throw error;
+      const page = data || [];
+      for (const f of page) if (f?.name) taken.add(f.name);
+      if (page.length < LIST_PAGE_SIZE) break;
+      offset += LIST_PAGE_SIZE;
+    }
+  } catch {
+    // If listing fails for any reason, fall back to a timestamp suffix to
+    // guarantee uniqueness rather than risk overwriting a sibling file.
     return `${safe}-${Date.now()}.webp`;
   }
-  const taken = new Set((data || []).map((f) => f.name));
   if (!taken.has(`${safe}.webp`)) return `${safe}.webp`;
-  for (let i = 1; i < 1000; i++) {
+  for (let i = 1; i < MAX_COLLISION_PROBE; i++) {
     const candidate = `${safe}-${i}.webp`;
     if (!taken.has(candidate)) return candidate;
   }
