@@ -291,20 +291,37 @@ export default function ShopDetail() {
           </div>
         </div>
 
+        {/* Description — only when present */}
+        {shop.description && shop.description.trim() && (
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1.5">
+              About
+            </p>
+            <p className="text-foreground text-sm leading-relaxed whitespace-pre-line break-words">
+              {shop.description}
+            </p>
+          </div>
+        )}
+
         {/* Details */}
         <div className="bg-card rounded-xl border border-border divide-y divide-border">
-          {/* Merge address + area into one row when both exist */}
-          {shop.address && shop.area ? (
-            <DetailRow
-              icon={<MapPin className="w-5 h-5 text-primary" />}
-              label="Location"
-              value={`${shop.address}, ${shop.area}`}
-            />
-          ) : shop.address ? (
-            <DetailRow icon={<MapPin className="w-5 h-5 text-primary" />} label="Address" value={shop.address} />
-          ) : shop.area ? (
-            <DetailRow icon={<MapPin className="w-5 h-5 text-primary" />} label="Area" value={shop.area} />
-          ) : null}
+          {/* Merge address + sub_area + area into one Location row */}
+          {(() => {
+            const parts = [shop.address, (shop as any).sub_area, shop.area].filter(
+              (p) => p && String(p).trim()
+            );
+            if (parts.length === 0) return null;
+            const label = parts.length === 1 && shop.address ? 'Address'
+              : parts.length === 1 && shop.area ? 'Area'
+              : 'Location';
+            return (
+              <DetailRow
+                icon={<MapPin className="w-5 h-5 text-primary" />}
+                label={label}
+                value={parts.join(', ')}
+              />
+            );
+          })()}
           {(shop.opening_time || shop.closing_time) && (
             <DetailRow
               icon={<Clock className="w-5 h-5 text-primary" />}
