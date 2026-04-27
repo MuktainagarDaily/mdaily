@@ -62,6 +62,7 @@ function emptyDraft(): DraftShop {
     area: '', sub_area: '', address: '',
     category_id: '', opening_time: '', closing_time: '',
     description: '', keywords: '',
+    amenities: [],
   };
 }
 
