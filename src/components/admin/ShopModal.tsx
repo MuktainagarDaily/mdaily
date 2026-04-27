@@ -394,6 +394,10 @@ export function ShopModal({ shop, onClose, onSaved }: ShopModalProps) {
               <p className="text-[11px] text-muted-foreground mt-1">Separate keywords with commas</p>
             </Field>
 
+            <Field label="Amenities (optional)">
+              <AmenitiesPicker value={form.amenities} onChange={(next) => set('amenities', next)} />
+            </Field>
+
             {/* Location */}
             <div className="rounded-xl border" style={{ background: 'hsl(var(--muted) / 0.5)', borderColor: 'hsl(var(--border))' }}>
               <div className="flex items-center gap-1.5 px-4 pt-3 pb-2">
