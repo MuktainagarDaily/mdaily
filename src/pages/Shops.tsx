@@ -87,6 +87,7 @@ export default function Shops() {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (availability === 'open') params.set('filter', 'open');
+    else if (availability === 'closed') params.set('filter', 'closed');
     else if (verifiedOnly) params.set('filter', 'verified');
     selectedAreas.forEach((a) => params.append('area', a));
     selectedCategories.forEach((c) => params.append('category', c));
