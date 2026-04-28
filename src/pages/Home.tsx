@@ -344,11 +344,33 @@ export default function Home() {
     if (type === 'verified') setVerifiedOnly(false);
   };
 
-  // Quick chip toggles
+  // Build a Shops URL from a filter set
+  const buildShopsUrl = (
+    avail: AvailabilityFilter,
+    areas: string[],
+    cats: string[],
+    verified: boolean,
+    searchText: string,
+  ) => {
+    const params = new URLSearchParams();
+    if (searchText.trim()) params.set('search', searchText.trim());
+    if (verified) params.set('filter', 'verified');
+    else if (avail === 'open') params.set('filter', 'open');
+    areas.forEach((a) => params.append('area', a));
+    cats.forEach((c) => params.append('category', c));
+    const qs = params.toString();
+    return `/shops${qs ? `?${qs}` : ''}`;
+  };
+
+  // Quick chip toggles — navigate immediately so the filter actually takes effect
   const toggleQuickCategory = (catName: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(catName) ? prev.filter((c) => c !== catName) : [...prev, catName]
-    );
+    const nextCats = selectedCategories.includes(catName)
+      ? selectedCategories.filter((c) => c !== catName)
+      : [...selectedCategories, catName];
+    setSelectedCategories(nextCats);
+    if (nextCats.length > 0) {
+      navigate(buildShopsUrl(availability, selectedAreas, nextCats, verifiedOnly, search));
+    }
   };
 
   const handleApplyAndNavigate = () => {
@@ -357,12 +379,7 @@ export default function Home() {
     setSelectedCategories(sheetCategories);
     setVerifiedOnly(sheetVerifiedOnly);
     setFilterOpen(false);
-    const params = new URLSearchParams();
-    if (search.trim()) params.set('search', search.trim());
-    if (sheetVerifiedOnly) params.set('filter', 'verified');
-    else if (sheetAvailability === 'open') params.set('filter', 'open');
-    const qs = params.toString();
-    navigate(`/shops${qs ? `?${qs}` : ''}`);
+    navigate(buildShopsUrl(sheetAvailability, sheetAreas, sheetCategories, sheetVerifiedOnly, search));
   };
 
   const handleSearch = (e: React.FormEvent) => {
