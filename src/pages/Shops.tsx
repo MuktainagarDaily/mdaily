@@ -53,7 +53,9 @@ export default function Shops() {
   const [localSearch, setLocalSearch] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [searchFocused, setSearchFocused] = useState(false);
-  const [availability, setAvailability] = useState<AvailabilityFilter>(filterParam === 'open' ? 'open' : 'all');
+  const [availability, setAvailability] = useState<AvailabilityFilter>(
+    filterParam === 'open' ? 'open' : filterParam === 'closed' ? 'closed' : 'all'
+  );
   const [selectedAreas, setSelectedAreas] = useState<string[]>(initialAreas);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories);
   const [verifiedOnly, setVerifiedOnly] = useState(filterParam === 'verified');
