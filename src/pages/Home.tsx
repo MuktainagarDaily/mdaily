@@ -356,6 +356,7 @@ export default function Home() {
     if (searchText.trim()) params.set('search', searchText.trim());
     if (verified) params.set('filter', 'verified');
     else if (avail === 'open') params.set('filter', 'open');
+    else if (avail === 'closed') params.set('filter', 'closed');
     areas.forEach((a) => params.append('area', a));
     cats.forEach((c) => params.append('category', c));
     const qs = params.toString();
