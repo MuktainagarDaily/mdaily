@@ -56,6 +56,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_sc_cat"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sc_shop"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "shop_categories_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -91,6 +105,13 @@ export type Database = {
           shop_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_eng_shop"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shop_engagement_shop_id_fkey"
             columns: ["shop_id"]
@@ -195,7 +216,7 @@ export type Database = {
           name: string
           opening_time: string | null
           phone: string | null
-          slug: string
+          slug: string | null
           sub_area: string | null
           updated_at: string
           whatsapp: string | null
@@ -219,7 +240,7 @@ export type Database = {
           name: string
           opening_time?: string | null
           phone?: string | null
-          slug: string
+          slug?: string | null
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null
@@ -243,7 +264,7 @@ export type Database = {
           name?: string
           opening_time?: string | null
           phone?: string | null
-          slug?: string
+          slug?: string | null
           sub_area?: string | null
           updated_at?: string
           whatsapp?: string | null
@@ -260,13 +281,77 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      shop_engagement_stats: {
+        Row: {
+          calls_30d: number | null
+          last_event_at: string | null
+          shop_id: string | null
+          total_30d: number | null
+          waps_30d: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_eng_shop"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shop_engagement_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_shop_slug: {
         Args: { p_exclude_id?: string; p_name: string }
         Returns: string
       }
+      get_trending_shops: {
+        Args: { lim?: number }
+        Returns: {
+          area: string
+          calls_30d: number
+          closing_time: string
+          id: string
+          image_url: string
+          is_open: boolean
+          is_verified: boolean
+          name: string
+          opening_time: string
+          phone: string
+          slug: string
+          total_30d: number
+          waps_30d: number
+          whatsapp: string
+        }[]
+      }
+      refresh_engagement_stats: { Args: never; Returns: undefined }
+      search_shops: {
+        Args: { lim?: number; q: string }
+        Returns: {
+          address: string
+          area: string
+          closing_time: string
+          id: string
+          image_url: string
+          is_open: boolean
+          is_verified: boolean
+          name: string
+          opening_time: string
+          phone: string
+          score: number
+          slug: string
+          whatsapp: string
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never

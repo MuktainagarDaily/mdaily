@@ -404,9 +404,44 @@ ON CONFLICT DO NOTHING;
 
 
 -- ============================================================================
+-- PHASE A — PERFORMANCE, INTEGRITY, SEARCH, TRENDING (2026-04-28)
+-- ============================================================================
+
+-- Performance indexes
+CREATE INDEX IF NOT EXISTS idx_shops_is_active       ON public.shops(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_shops_area            ON public.shops(area);
+CREATE INDEX IF NOT EXISTS idx_shops_category_id     ON public.shops(category_id);
+CREATE INDEX IF NOT EXISTS idx_shops_created_at_desc ON public.shops(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_shop_categories_shop_id     ON public.shop_categories(shop_id);
+CREATE INDEX IF NOT EXISTS idx_shop_categories_category_id ON public.shop_categories(category_id);
+CREATE INDEX IF NOT EXISTS idx_shop_requests_status        ON public.shop_requests(status, created_at DESC);
+
+-- Foreign keys (orphan protection)
+ALTER TABLE public.shop_categories
+  ADD CONSTRAINT fk_sc_shop FOREIGN KEY (shop_id)     REFERENCES public.shops(id)      ON DELETE CASCADE,
+  ADD CONSTRAINT fk_sc_cat  FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE CASCADE;
+ALTER TABLE public.shop_engagement
+  ADD CONSTRAINT fk_eng_shop FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE;
+
+-- Trigram fuzzy search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_shops_name_trgm     ON public.shops USING gin (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_shops_keywords_trgm ON public.shops USING gin (keywords gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_shops_address_trgm  ON public.shops USING gin (address gin_trgm_ops);
+
+-- search_shops(q, lim) — typo-tolerant ranked search RPC (SECURITY INVOKER, RLS-safe)
+-- get_trending_shops(lim) — top shops from materialized engagement stats (SECURITY DEFINER)
+-- refresh_engagement_stats() — admin-only refresh helper
+-- shop_engagement_stats — materialized view (calls/waps/total in last 30d, locked from public API)
+
+-- See migrations 20260428_phase_a_*.sql for full DDL.
+
+-- ============================================================================
 -- END OF MASTER SCHEMA
 -- ============================================================================
 -- CHANGE LOG:
+--   2026-04-28 — Phase A: 13 indexes, 3 FKs, pg_trgm + search_shops RPC,
+--                shop_engagement_stats materialized view + get_trending_shops RPC.
 --   2026-04-09 — Initial master file created from 15 individual migrations.
 --                Covers all tables, RLS, functions, triggers, storage, seeds.
 --
